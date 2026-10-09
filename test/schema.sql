@@ -1,0 +1,14 @@
+CREATE TABLE countries (country_slug TEXT PRIMARY KEY, name TEXT NOT NULL, currency TEXT NOT NULL);
+CREATE TABLE fx_rates (currency TEXT PRIMARY KEY, inr_per_unit REAL NOT NULL CHECK (inr_per_unit > 0), as_of TEXT NOT NULL);
+CREATE TABLE cities (city_slug TEXT PRIMARY KEY, country_slug TEXT NOT NULL REFERENCES countries(country_slug), name TEXT NOT NULL, monthly_living_cost_local REAL, cost_source_url TEXT, data_quality TEXT, last_verified TEXT);
+CREATE TABLE universities (uni_slug TEXT PRIMARY KEY, name TEXT NOT NULL, city_slug TEXT NOT NULL REFERENCES cities(city_slug), website_url TEXT);
+CREATE TABLE courses (course_slug TEXT PRIMARY KEY, uni_slug TEXT NOT NULL REFERENCES universities(uni_slug), name TEXT NOT NULL, degree_level TEXT NOT NULL, field TEXT NOT NULL, duration_months INTEGER NOT NULL, tuition_total_local REAL, tuition_per_year_local REAL, description TEXT, course_url TEXT, data_quality TEXT, last_verified TEXT);
+CREATE TABLE course_tags (course_slug TEXT NOT NULL, tag TEXT NOT NULL, PRIMARY KEY (course_slug, tag));
+CREATE TABLE intakes (course_slug TEXT NOT NULL, start_month INTEGER NOT NULL, start_year INTEGER NOT NULL, application_deadline TEXT, is_rolling INTEGER NOT NULL, PRIMARY KEY (course_slug, start_month, start_year));
+CREATE TABLE course_requirements (course_slug TEXT PRIMARY KEY, min_percentage_equiv REAL, requirement_raw_text TEXT, accepted_backgrounds TEXT, ielts_min REAL, toefl_min INTEGER, pte_min INTEGER, gre_policy TEXT, gmat_policy TEXT, min_work_exp_months INTEGER);
+CREATE TABLE course_documents (course_slug TEXT NOT NULL, doc_type TEXT NOT NULL, quantity INTEGER, effort_days REAL, PRIMARY KEY (course_slug, doc_type));
+CREATE TABLE accommodation_options (uni_slug TEXT NOT NULL, type TEXT NOT NULL, monthly_cost_local REAL, distance_km REAL, source_url TEXT, data_quality TEXT, last_verified TEXT, PRIMARY KEY (uni_slug, type));
+CREATE TABLE scholarships (scholarship_slug TEXT PRIMARY KEY, name TEXT NOT NULL, provider TEXT, provider_type TEXT, country_slug TEXT, uni_slug TEXT, amount_local REAL, covers TEXT, deadline TEXT, source_url TEXT, data_quality TEXT, last_verified TEXT);
+CREATE TABLE scholarship_rules (scholarship_slug TEXT NOT NULL, attribute TEXT NOT NULL, operator TEXT NOT NULL, value TEXT NOT NULL, description TEXT, PRIMARY KEY (scholarship_slug, attribute, operator));
+CREATE TABLE demo_students (student_slug TEXT PRIMARY KEY, raw_input TEXT NOT NULL, expected_note TEXT);
+CREATE TABLE verification_log (file TEXT, row_key TEXT, column TEXT, value TEXT, source_url TEXT, evidence_snippet TEXT, notes TEXT);

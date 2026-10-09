@@ -1,0 +1,26 @@
+{
+  "name": "gradguide-copilot",
+  "version": "1.0.0",
+  "description": "Counsellor-facing course recommendation assistant for live Google Meet sessions",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning server.js",
+    "test": "node --disable-warning=ExperimentalWarning test/mock_db.js && node --disable-warning=ExperimentalWarning test/run_demos.js && node --disable-warning=ExperimentalWarning --test test/extraction.test.js test/followup.test.js",
+    "test:real": "node --disable-warning=ExperimentalWarning test/run_demos.js ./gradguide.db",
+    "test:llm": "node --disable-warning=ExperimentalWarning --test test/extraction.test.js test/followup.test.js",
+    "check:gemini": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning scripts/check-gemini.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "connect-mongo": "^6.0.0",
+    "dotenv": "^18.0.6",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.7.1",
+    "express-session": "^1.19.0",
+    "mongoose": "^9.11.1"
+  }
+}

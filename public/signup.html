@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#11152e"><title>Create account · GradGuide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/auth.css"><script src="/auth.js" defer></script></head>
+<body data-page="signup"><main class="auth-shell">
+<aside class="brand-panel"><a class="brand" href="/login.html"><span class="brand-mark">G</span><span>GradGuide <small>Copilot</small></span></a>
+<div class="brand-copy"><span class="eyebrow"><span class="pulse"></span> YOUR COUNSELLING WORKSPACE</span>
+<h1>Make every student’s next step <span>more certain.</span></h1>
+<p>Create your counsellor account and bring discovery, comparison and course recommendations into one place.</p>
+<ul class="benefits">
+<li><span class="check">✓</span><span><b>Keep the student in focus</b><small>Capture goals and constraints in a guided conversation.</small></span></li>
+<li><span class="check">✓</span><span><b>Compare with confidence</b><small>See fit, costs and eligibility in context.</small></span></li>
+<li><span class="check">✓</span><span><b>Build a clearer shortlist</b><small>Explore relevant courses and alternatives.</small></span></li>
+</ul></div>
+<div class="brand-footer"><span class="footer-orb">✦</span><span><b>A workspace made for guidance</b><small>Structured conversations. Explainable choices.</small></span></div>
+<div class="decor decor-one"></div><div class="decor decor-two"></div></aside>
+<section class="form-panel"><div class="mobile-brand"><span class="brand-mark">G</span><b>GradGuide <small>Copilot</small></b></div>
+<div class="form-wrap signup-wrap"><div class="form-heading"><span class="eyebrow light">GET STARTED</span><h2>Create your account</h2><p>Set up your counsellor workspace in a minute.</p></div>
+<form id="auth-form" novalidate>
+<label for="fullName">Full name</label><input id="fullName" name="fullName" autocomplete="name" placeholder="e.g. Tanaya Sharma" maxlength="100" required>
+<label for="username">Username</label><input id="username" name="username" autocomplete="username" placeholder="Choose a username" minlength="3" maxlength="30" pattern="[a-zA-Z0-9._-]+" required>
+<label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" maxlength="254" required>
+<div class="label-row"><label for="password">Password</label><button type="button" class="text-button" data-toggle-password="password">Show</button></div>
+<input id="password" name="password" type="password" autocomplete="new-password" placeholder="At least 8 characters" minlength="8" maxlength="72" required>
+<label for="confirmPassword">Confirm password</label><input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" placeholder="Enter your password again" minlength="8" maxlength="72" required>
+<div id="form-message" class="form-message" role="status" aria-live="polite"></div>
+<button class="submit-button" type="submit"><span>Create account</span><span aria-hidden="true">→</span></button></form>
+<div class="secure-note signup-secure"><span class="lock-icon">⌑</span><span>Your password is securely hashed before it is stored.</span></div>
+<p class="switch-copy">Already have an account? <a href="/login.html">Log in <span>↗</span></a></p></div>
+<footer class="form-footer"><span>© <span data-year></span> GradGuide Copilot</span><span>Made for better student outcomes</span></footer></section>
+</main></body></html>
