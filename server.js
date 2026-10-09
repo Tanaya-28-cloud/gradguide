@@ -18,6 +18,16 @@ import { requireAuth } from "./middleware/requireAuth.js";
 const db = openDb();
 const data = loadData(db);
 const app = express();
+
+// Behind Render's proxy (and Vercel's rewrite in front of it) the app must trust X-Forwarded-* headers; otherwise
+// express-session never sends the Secure cookie over HTTPS and rate limiting sees the proxy's IP instead of the user's.
+// TRUST_PROXY: number of proxy hops (default 1 in production), "true"/"false", or a subnet list. Unset locally = off.
+const trustProxy = (process.env.TRUST_PROXY ?? (process.env.NODE_ENV === "production" ? "1" : "")).trim();
+if (trustProxy) app.set("trust proxy", /^\d+$/.test(trustProxy) ? Number(trustProxy) : trustProxy === "true" ? true : trustProxy === "false" ? false : trustProxy);
+
+// Health check for Render (no session, no database work). Registered before everything else.
+app.get("/healthz", (req, res) => res.json({ ok: true }));
+
 app.use(express.json({ limit: "200kb" }));
 
 const startServer = async () => {
