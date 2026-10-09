@@ -71,9 +71,16 @@ const SCALARS = {
 };
 const BOOLEANS = ["research", "wants_scholarships"];
 
+// Plain-language scale of each numeric field, used to ask a precise question when a stated number does not fit its scale.
+const SCALE = {
+    cgpa: ["the CGPA", "0 to 10"], percentage: ["the percentage", "0 to 100"], gre: ["the GRE score", "260 to 340"], gmat: ["the GMAT score", "200 to 800"],
+    intake_year: ["the intake year", "2026 to 2032"],
+};
+
 function sanitizeUpdates(raw, countrySlugs) {
     const updates = {};
     const rejected = [];
+    const invalid = []; // numbers that were stated but do not fit their scale: asked about instead of silently dropped
     const src = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
     const keepList = (key, value, allowed) => {
         const list = Array.isArray(value) ? uniq(value.filter((x) => typeof x === "string" && allowed(x))) : [];
@@ -83,12 +90,21 @@ function sanitizeUpdates(raw, countrySlugs) {
         if (isEmpty(value)) continue;
         if (SCALARS[key]) {
             const v = SCALARS[key](value);
-            if (v == null) rejected.push(key); else updates[key] = v;
+            if (v == null) {
+                rejected.push(key);
+                if (SCALE[key] && Number.isFinite(Number(value))) invalid.push({ field: key, issue: `${value} is outside ${SCALE[key][1]}`, question: `${value} doesn't fit ${SCALE[key][0]} (it should be ${SCALE[key][1]}). What should I record?` });
+            } else updates[key] = v;
         } else if (key === "english") {
             const test = value && typeof value === "object" ? str(value.test, 10)?.toUpperCase() : null;
             const range = ENGLISH_RANGE[test];
             const score = range ? numIn(value.score, range[0], range[1], { int: ENGLISH_WHOLE.includes(test) }) : null;
-            if (score == null) rejected.push(key); else updates.english = { test, score };
+            if (score == null) {
+                rejected.push(key);
+                if (range && Number.isFinite(Number(value.score))) {
+                    const whole = ENGLISH_WHOLE.includes(test) ? ", in whole numbers" : "";
+                    invalid.push({ field: "english", issue: `${test} ${value.score} is outside ${range[0]} to ${range[1]}`, question: `${test} scores run from ${range[0]} to ${range[1]}${whole}, so ${value.score} doesn't fit. Which test did the student take and what was the score?` });
+                }
+            } else updates.english = { test, score };
         } else if (BOOLEANS.includes(key)) {
             if (typeof value === "boolean") updates[key] = value; else rejected.push(key);
         } else if (key === "goals") {
@@ -102,7 +118,7 @@ function sanitizeUpdates(raw, countrySlugs) {
             rejected.push(key); // a field that is not in the profile schema
         }
     }
-    return { updates, rejected };
+    return { updates, rejected, invalid };
 }
 
 /**
@@ -114,12 +130,13 @@ export function validateExtraction(data, countrySlugs) {
     if (!data || typeof data !== "object" || Array.isArray(data)) throw new ExtractionError("The model reply is not a JSON object.");
     if (!data.updates || typeof data.updates !== "object" || Array.isArray(data.updates)) throw new ExtractionError("The model reply has no 'updates' object.");
 
-    const { updates, rejected } = sanitizeUpdates(data.updates, countrySlugs);
+    const { updates, rejected, invalid } = sanitizeUpdates(data.updates, countrySlugs);
     const corrections = uniq((Array.isArray(data.corrections) ? data.corrections : []).filter((f) => CORRECTABLE.includes(f)));
     const ambiguities = (Array.isArray(data.ambiguities) ? data.ambiguities : [])
         .map((a) => ({ field: str(a?.field, 40) || "unknown", issue: str(a?.issue, 200) || "", question: str(a?.question, 200) }))
-        .filter((a) => a.question)
-        .slice(0, 2);
+        .filter((a) => a.question);
+    ambiguities.push(...invalid.filter((i) => !ambiguities.some((a) => a.field === i.field))); // a value that cannot be right is queried, never guessed
+    ambiguities.splice(2);
     // Items the counsellor said do not exist yet / are not known. Only labels from MISSING_ITEMS survive; the item is not "stated", just closed.
     const unavailable = uniq((Array.isArray(data.unavailable) ? data.unavailable : []).filter((x) => MISSING_ITEMS.includes(x)));
     const flexible = uniq((Array.isArray(data.flexible) ? data.flexible : []).filter((x) => FLEXIBLE_ITEMS.includes(x)));

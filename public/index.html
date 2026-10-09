@@ -1,15 +1,19 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>GradGuide Copilot</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <div id="app">
     <header class="top">
-      <div class="brand"><span class="logo">GG</span><div><b>GradGuide Copilot</b><small id="llm-badge">Counsellor workspace</small></div></div>
+      <div class="brand"><span class="logo">GG</span>
+        <div><b>GradGuide Copilot</b><small id="llm-badge">Counsellor workspace</small></div>
+      </div>
       <div class="top-actions">
         <button id="btn-reset" class="ghost hidden" title="Return to dashboard">End session</button>
         <button id="btn-pip" class="ghost hidden" title="Float this panel over Google Meet">Pop out ⧉</button>
@@ -20,8 +24,13 @@
       <section id="dashboard" class="welcome card">
         <span class="eyebrow">COUNSELLOR WORKSPACE</span>
         <h1>Welcome to GradGuide Copilot</h1>
-        <p class="muted intro">Start a counselling session by creating a student profile. Their contact details will be saved securely so the session can be tracked.</p>
-        <div class="welcome-bottom"><div><b>Ready to guide a student?</b><p class="muted small">Create a profile to open the course-recommendation assistant.</p></div><button id="btn-start-session" class="primary">＋ Start New Session</button></div>
+        <p class="muted intro">Start a counselling session by creating a student profile. Their contact details will be
+          saved securely so the session can be tracked.</p>
+        <div class="welcome-bottom">
+          <div><b>Ready to guide a student?</b>
+            <p class="muted small">Create a profile to open the course-recommendation assistant.</p>
+          </div><button id="btn-start-session" class="primary">＋ Start New Session</button>
+        </div>
       </section>
 
       <section id="student-form-panel" class="card form-panel hidden">
@@ -30,37 +39,91 @@
         <p class="muted intro">Fill in the student's basic details before starting the counselling session.</p>
         <form id="student-form" autocomplete="on" novalidate>
           <div class="student-grid">
-            <div class="field"><label for="firstName">First Name <span>*</span></label><input id="firstName" name="firstName" autocomplete="given-name" maxlength="80" required placeholder="Enter first name"></div>
-            <div class="field"><label for="lastName">Last Name <span>*</span></label><input id="lastName" name="lastName" autocomplete="family-name" maxlength="80" required placeholder="Enter last name"></div>
-            <div class="field field-full"><label for="college">College / University <span>*</span></label><input id="college" name="college" maxlength="180" required placeholder="Enter current college or university"></div>
-            <div class="field"><label for="email">Email Address <span>*</span></label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="student@example.com"></div>
-            <div class="field"><label for="phone">Phone Number <span>*</span></label><input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="25" required placeholder="Enter phone number"></div>
+            <div class="field"><label for="firstName">First Name <span>*</span></label><input id="firstName"
+                name="firstName" autocomplete="given-name" maxlength="80" required placeholder="Enter first name"></div>
+            <div class="field"><label for="lastName">Last Name <span>*</span></label><input id="lastName"
+                name="lastName" autocomplete="family-name" maxlength="80" required placeholder="Enter last name"></div>
+            <div class="field field-full"><label for="college">College / University <span>*</span></label><input
+                id="college" name="college" maxlength="180" required placeholder="Enter current college or university">
+            </div>
+            <div class="field"><label for="email">Email Address <span>*</span></label><input id="email" name="email"
+                type="email" autocomplete="email" maxlength="254" required placeholder="student@example.com"></div>
+            <div class="field"><label for="phone">Phone Number <span>*</span></label><input id="phone" name="phone"
+                type="tel" autocomplete="tel" inputmode="tel" maxlength="25" required placeholder="Enter phone number">
+            </div>
           </div>
           <p id="student-form-message" class="form-message" role="alert"></p>
-          <div class="form-actions"><button type="button" id="btn-cancel-form-bottom" class="secondary">Cancel</button><button type="submit" id="btn-create-student" class="primary">Create Profile &amp; Continue →</button></div>
+          <div class="form-actions"><button type="button" id="btn-cancel-form-bottom"
+              class="secondary">Cancel</button><button type="submit" id="btn-create-student" class="primary">Create
+              Profile &amp; Continue →</button></div>
         </form>
       </section>
 
       <section id="chatbot-shell" class="hidden">
         <div id="active-student" class="active-student card"></div>
         <div class="chat-layout">
-          <section id="step-input" class="card">
-            <h2>1 · Describe the student</h2>
-            <div id="turns"></div>
-            <textarea id="notes" rows="4" placeholder="e.g. BE Computer Engineering, 8.2 CGPA, IELTS 7, wants AI/ML, budget around ₹30 lakh, prefers Canada but Australia is okay."></textarea>
-            <div class="row"><select id="demo-select" aria-label="Load a demo student"><option value="">Load demo student…</option></select><button id="btn-extract" class="primary">Extract profile</button></div>
-            <p id="extract-msg" class="muted"></p>
+
+          <section id="followup-panel" class="card followup-panel hidden" style="margin: 0 auto 24px;">
+            <div class="followup-heading">
+              <div class="followup-icon" aria-hidden="true">▤</div>
+              <div>
+                <h2>A few details to clarify</h2>
+                <p>Answer these questions to complete the student profile.</p>
+              </div>
+            </div>
+
+            <div id="turns" class="followup-content"></div>
           </section>
+
+          <section id="step-input" class="card profile-input-card">
+            <div class="profile-heading">
+              <div class="profile-icon" aria-hidden="true">✦</div>
+              <h2>Student Profile</h2>
+              <p>Describe the student to extract their profile.</p>
+            </div>
+
+            <label for="notes" class="field-label">Student description</label>
+            <textarea id="notes" rows="7" maxlength="4000"
+              placeholder="e.g. BE Computer Engineering, 8.2 CGPA, IELTS 7, wants to study in Canada or Australia, budget around ₹30 lakh, interested in Cloud/DevOps, prefers Fall 2027 intake..."></textarea>
+
+            <div class="description-meta">
+              <p class="field-help">
+                <span aria-hidden="true">ⓘ</span>
+                Include academic background, target countries, budget, goals, test scores,
+                and any other relevant details.
+              </p>
+              <span id="notes-count" class="character-count">0 / 4000</span>
+            </div>
+
+            <div class="description-actions">
+              <p id="extract-msg" class="muted" role="status" aria-live="polite"></p>
+              <button id="btn-extract" class="primary extract-button">
+                <span aria-hidden="true">✦</span>
+                Extract Profile
+              </button>
+            </div>
+          </section>
+
           <section id="step-confirm" class="card hidden">
             <h2>2 · Confirm profile</h2>
-            <p class="muted small">The assistant only extracts — rankings below come from fixed rules, so the same profile always gives the same result.</p>
-            <div id="missing" class="notice hidden"></div><form id="profile-form" autocomplete="off"></form>
+            <p class="muted small">The assistant only extracts — rankings below come from fixed rules, so the same
+              profile always gives the same result.</p>
+            <div id="missing" class="notice hidden"></div>
+            <form id="profile-form" autocomplete="off"></form>
             <button id="btn-recommend" class="primary wide">Confirm &amp; recommend</button>
           </section>
           <section id="results" class="hidden">
-            <nav class="tabs" role="tablist"><button class="tab active" data-tab="recs">Recommendations</button><button class="tab" data-tab="plan">Application plan</button><button class="tab" data-tab="search">Search courses</button></nav>
-            <div id="tab-recs"></div><div id="tab-plan" class="hidden"></div>
-            <div id="tab-search" class="hidden"><div class="row"><input id="q" type="search" placeholder="e.g. cybersecurity Ireland, cloud, Monash…"><button id="btn-search" class="primary">Search</button></div><div id="search-out"></div></div>
+            <nav class="tabs" role="tablist"><button class="tab active" data-tab="recs">Recommendations</button><button
+                class="tab" data-tab="plan">Application plan</button><button class="tab" data-tab="search">Search
+                courses</button></nav>
+            <div id="tab-recs"></div>
+            <div id="tab-plan" class="hidden"></div>
+            <div id="tab-search" class="hidden">
+              <div class="row"><input id="q" type="search"
+                  placeholder="e.g. cybersecurity Ireland, cloud, Monash…"><button id="btn-search"
+                  class="primary">Search</button></div>
+              <div id="search-out"></div>
+            </div>
           </section>
         </div>
       </section>
@@ -68,4 +131,122 @@
   </div>
   <script src="app.js" type="module"></script>
 </body>
+
 </html>
+
+
+/* Compact layout for the counselling pop-out panel */
+body.pip #chatbot-shell {
+margin: 8px auto;
+}
+
+body.pip #chatbot-shell > #active-student {
+padding: 10px 14px;
+margin-bottom: 8px;
+}
+
+body.pip #chatbot-shell .chat-layout {
+gap: 10px;
+}
+
+/* Reduce profile card spacing */
+body.pip #chatbot-shell .profile-input-card {
+padding: 16px 18px;
+border-radius: 14px;
+}
+
+body.pip #chatbot-shell .profile-heading {
+margin-bottom: 12px;
+}
+
+body.pip #chatbot-shell .profile-icon {
+width: 32px;
+height: 32px;
+font-size: 18px;
+margin-bottom: 6px;
+}
+
+body.pip #chatbot-shell .profile-heading h2 {
+font-size: 20px;
+margin: 0;
+}
+
+body.pip #chatbot-shell .profile-heading p {
+font-size: 12px;
+margin-top: 4px;
+}
+
+/* Compact description field */
+body.pip #chatbot-shell .field-label {
+font-size: 12px;
+margin-bottom: 5px;
+}
+
+body.pip #chatbot-shell #notes {
+min-height: 105px;
+height: 105px;
+padding: 10px 12px;
+font-size: 13px;
+line-height: 1.5;
+}
+
+/* Reduce helper text and action spacing */
+body.pip #chatbot-shell .description-meta {
+margin-top: 5px;
+gap: 6px;
+}
+
+body.pip #chatbot-shell .field-help,
+body.pip #chatbot-shell .character-count {
+font-size: 10px;
+line-height: 1.35;
+}
+
+body.pip #chatbot-shell .description-actions {
+margin-top: 10px;
+gap: 8px;
+}
+
+body.pip #chatbot-shell .extract-button {
+min-height: 36px;
+padding: 0 16px;
+font-size: 12px;
+border-radius: 8px;
+}
+
+/* Compact follow-up question card */
+body.pip #chatbot-shell .followup-panel {
+padding: 12px 14px;
+margin-top: 0;
+border-radius: 12px;
+}
+
+body.pip #chatbot-shell .followup-heading {
+gap: 8px;
+margin-bottom: 8px;
+}
+
+body.pip #chatbot-shell .followup-icon {
+width: 28px;
+height: 28px;
+font-size: 16px;
+}
+
+body.pip #chatbot-shell .followup-heading h2 {
+font-size: 16px;
+}
+
+body.pip #chatbot-shell .followup-heading p {
+font-size: 11px;
+margin-top: 3px;
+}
+
+body.pip #chatbot-shell .followup-content {
+gap: 6px;
+}
+
+body.pip #chatbot-shell .followup-content > div {
+padding: 10px 12px;
+font-size: 12px;
+line-height: 1.45;
+}

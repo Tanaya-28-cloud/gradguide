@@ -65,7 +65,6 @@ const startServer = async () => {
       countries: data.countries.map((c) => ({ slug: c.country_slug, name: c.name }))
         .filter((c) => data.courses.some((x) => x.country.country_slug === c.slug)),
       goals: Object.entries(GOALS).map(([id, g]) => ({ id, label: g.label })),
-      demo_students: data.demoStudents,
       llm: !!process.env.GEMINI_API_KEY,
       llm_model: geminiConfig().model,
       course_count: data.courses.length,

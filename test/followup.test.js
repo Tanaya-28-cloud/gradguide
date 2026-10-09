@@ -174,3 +174,30 @@ test("validate: TOEFL and PTE totals are whole numbers, so 'TOEFL 8.24' is rejec
     assert.deepEqual(validateExtraction({ updates: { english: { test: "TOEFL", score: 100 } } }, SLUGS).updates.english, { test: "TOEFL", score: 100 });
     assert.deepEqual(validateExtraction({ updates: { english: { test: "IELTS", score: 6.5 } } }, SLUGS).updates.english, { test: "IELTS", score: 6.5 });
 });
+
+// ---------- a stated number that cannot be right is queried, not silently dropped ----------
+test("validate: 'PTE 7' (PTE runs 10-90) is not stored and produces a precise question", () => {
+    const v = validateExtraction({ updates: { english: { test: "PTE", score: 7 }, budget_inr: 6000000 } }, SLUGS);
+    assert.equal(v.updates.english, undefined);
+    assert.equal(v.updates.budget_inr, 6000000, "the rest of the message is still used");
+    assert.equal(v.ambiguities.length, 1);
+    assert.match(v.ambiguities[0].question, /PTE scores run from 10 to 90, in whole numbers, so 7 doesn't fit/);
+});
+
+test("validate: out-of-scale CGPA / GRE are queried too; valid values and non-numbers are not", () => {
+    const v = validateExtraction({ updates: { cgpa: 11, gre: 500 } }, SLUGS);
+    assert.deepEqual(v.ambiguities.map((a) => a.field).sort(), ["cgpa", "gre"]);
+    assert.equal(validateExtraction({ updates: { cgpa: 8.2 } }, SLUGS).ambiguities.length, 0);
+    assert.equal(validateExtraction({ updates: { cgpa: "high" } }, SLUGS).ambiguities.length, 0);
+});
+
+test("end to end: the screenshot message keeps budget and country, and the app is told to ask about the PTE score", async () => {
+    const r = await extractProfile("pte with a score of 7, budget is 60 lakhs, preffered country is new zealand", COUNTRIES, null, {
+        config: KEY, log: () => { },
+        generate: reply({ updates: { english: { test: "PTE", score: 7 }, budget_inr: 6000000, preferred_countries: ["new-zealand"] } }),
+    });
+    assert.equal(r.profile.budget_inr, 6000000);
+    assert.deepEqual(r.profile.preferred_countries, ["new-zealand"]);
+    assert.equal(r.profile.english, null);
+    assert.match(r.ambiguities[0].question, /PTE scores run from 10 to 90/);
+});

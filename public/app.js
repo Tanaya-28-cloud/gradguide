@@ -22,13 +22,24 @@ async function init() {
   bindSessionFlow();
   state.meta = await api("/api/meta");
   defaultPlaceholder = $("#notes").placeholder;
+
+  const notes = $("#notes");
+  const notesCount = $("#notes-count");
+
+  function updateNotesCount() {
+    notesCount.textContent = `${notes.value.length} / 4000`;
+  }
+
+  notes.addEventListener("input", updateNotesCount);
+  updateNotesCount();
+
   $("#llm-badge").textContent = state.meta.llm ? `Gemini extraction on (${state.meta.llm_model})` : "Rule-based fallback (add GEMINI_API_KEY for LLM)";
-  const sel = $("#demo-select");
-  for (const s of state.meta.demo_students) sel.insertAdjacentHTML("beforeend", `<option value="${esc(s.student_slug)}">${esc(s.student_slug)}</option>`);
-  sel.addEventListener("change", () => {
-    const s = state.meta.demo_students.find((d) => d.student_slug === sel.value);
-    if (s) $("#notes").value = s.raw_input;
-  });
+  // const sel = $("#demo-select");
+  // for (const s of state.meta.demo_students) sel.insertAdjacentHTML("beforeend", `<option value="${esc(s.student_slug)}">${esc(s.student_slug)}</option>`);
+  // sel.addEventListener("change", () => {
+  //   const s = state.meta.demo_students.find((d) => d.student_slug === sel.value);
+  //   if (s) $("#notes").value = s.raw_input;
+  // });
   $("#btn-extract").addEventListener("click", extract);
   $("#btn-recommend").addEventListener("click", recommend);
   $("#profile-form").addEventListener("submit", (e) => { e.preventDefault(); recommend(); });
@@ -153,12 +164,26 @@ function reset() {
 }
 
 // Conversation history: counsellor messages and the assistant's follow-up questions stay visible.
+
 function renderTurns() {
   let n = 0;
-  $("#turns").innerHTML = state.turns.map((t) => t.role === "assistant"
-    ? `<div class="small" style="margin-bottom:6px"><b>GradGuide</b><br>${esc(t.text)}</div>`
-    : `<div class="muted small" style="margin-bottom:6px"><b>Counsellor · turn ${++n}</b><br>${esc(t.text)}</div>`).join("");
+
+  $("#turns").innerHTML = state.turns.map((t) =>
+    t.role === "assistant"
+      ? `<div class="followup-question">
+           <b>GradGuide · Follow-up question</b><br>
+           ${esc(t.text)}
+         </div>`
+      : `<div class="counsellor-note">
+           <b>Counsellor · Turn ${++n}</b><br>
+           ${esc(t.text)}
+         </div>`
+  ).join("");
+
+  const panel = $("#followup-panel");
+  panel.classList.toggle("hidden", state.turns.length === 0);
 }
+
 
 async function extract() {
   const text = $("#notes").value.trim();
