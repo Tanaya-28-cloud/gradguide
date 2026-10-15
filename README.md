@@ -3,6 +3,7 @@
 A counsellor-facing assistant that sits beside Google Meet (as a floating Picture-in-Picture panel) and turns a student's profile into **consistent, explainable** course recommendations, plus scholarship matching, a realistic total-cost estimate, and an application-priority plan.
 
 > Video walkthrough: https://drive.google.com/drive/folders/1x3kAtn21CRUOsp0B0X4SOg3WQDjd4dbh?usp=sharing
+> Project Link - https://gradguide-public.vercel.app/login.html
 
 ## Run it
 
